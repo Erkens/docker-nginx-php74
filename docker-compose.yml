@@ -1,0 +1,95 @@
+version: "3.7"
+
+services:
+    php:
+        image: skrepr/php:dev-u${UID:-1000}-g${GID:-1000}
+        container_name: skrepr_php
+        build:
+            context: ./docker/php
+            dockerfile: Dockerfile
+            args:
+                USER_ID: ${UID:-1000}
+                GROUP_ID: ${GID:-1000}
+        volumes:
+            - ./:/data:rw
+
+    web:
+        image: skrepr/nginx:dev-u${UID:-1000}-g${GID:-1000}
+        container_name: skrepr_web
+        build:
+            context: ./docker/nginx
+            dockerfile: Dockerfile
+            args:
+                USER_ID: ${UID:-1000}
+                GROUP_ID: ${GID:-1000}
+# When using nginx-proxy for development
+#        environment:
+#            - VIRTUAL_HOST=test.skrepr.loc
+        volumes:
+            - ./:/data:rw
+        ports:
+            - 80
+        networks:
+            default: ~
+# When using nginx-proxy for development
+#            nginx-proxy:
+#                aliases:
+#                    - test.skrepr.loc
+
+
+# When using webpack encore
+#    node:
+#        image: node:12.13.0-alpine
+#        container_name: skrepr_node
+#        volumes:
+#            - ./assets:/data/assets:ro
+#            - ./webpack.config.js:/data/webpack.config.js:ro
+#            - ./yarn.lock:/data/yarn.lock:rw
+#            - ./.npmrc:/data/.npmrc:ro
+#            - ./package.json:/data/package.json:rw
+#            - ./public/build:/data/public/build:rw
+#            - ./node_modules:/data/node_modules:rw
+#        user: ${UID:-1000}
+#        working_dir: /data
+#        command: sh -c "yarn install && yarn encore dev --watch"
+
+# When needing a postgres database
+#    db:
+#        image: postgres:12.4-alpine
+#        container_name: skrepr_db
+#        volumes:
+#            - skrepr_volume_db:/var/lib/postgresql/data
+#        environment:
+#            - POSTGRES_PASSWORD=secret
+#        ports:
+#            - 5432
+
+# When needing a mysql database
+#    db:
+#        image: mariadb:10.4
+#        container_name: skrepr_db
+#        volumes:
+#            - skrepr_volume_db:/var/lib/mysql
+#        environment:
+#            - MYSQL_ROOT_PASSWORD=secret
+#        ports:
+#            - 3306
+
+
+# Simple catch-all mail receiver
+#    mailhog:
+#        image: mailhog/mailhog
+#        container_name: skrepr_mail
+#        ports:
+#            - 8025
+
+# Enable when using any database
+#volumes:
+#    skrepr_volume_db:
+#        driver: local
+
+# Enable when using nginx-proxy
+#networks:
+#  nginx-proxy:
+#      external:
+#          name: nginx-proxy
